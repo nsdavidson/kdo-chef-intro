@@ -1,0 +1,36 @@
+Intro
+=====
+What is "Chef?" (talking about client and server, other products out of scope)
+ChefDK components
+  - Chef CLI tool
+  - Berkshelf
+  - Test Kitchen
+  - ChefSpec
+  - Foodcritic
+  - Knife
+  - Chef-client
+  - Ohai
+Recipes/resources/attributes (recipes are made of resources and contain logic, attributes contain data)
+Resources vs. Providers
+Custom resources (can be a collection of other built in resources, or totally new functionality)
+Trinity of package/service/config.
+Ohai! (What it does and custom plugins)
+
+Advanced
+=====
+Testing!  (ChefSpec, Test Kitchen, foodcritic, rubocop, CI)
+Two pass model (Compile and Converge)
+Roles and Environments
+Search (knife and recipe)
+Cookbook patterns
+Handlers
+
+Learning Resources
+=====
+learnchef
+kitchen.ci
+Learning Chef (book)
+
+Demo
+=====
+Configure a multi node app environment using search, data bags, environments, etc
