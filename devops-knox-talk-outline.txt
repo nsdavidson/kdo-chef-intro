@@ -11,13 +11,12 @@ ChefDK components
   - Chef-client
   - Ohai
 Recipes/resources/attributes (recipes are made of resources and contain logic, attributes contain data)
-Resources vs. Providers
 Custom resources (can be a collection of other built in resources, or totally new functionality)
-Trinity of package/service/config.
-Ohai! (What it does and custom plugins)
+Chef is Ruby!
 
 Advanced
 =====
+Resources vs. Providers
 Testing!  (ChefSpec, Test Kitchen, foodcritic, rubocop, CI)
 Two pass model (Compile and Converge)
 Roles and Environments
