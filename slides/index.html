@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Introduction to Chef (The Advanced Version)</title>
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Intro to Chef (The Advanced Version)</h1>
+					<img src="img/chef_logo.png"></img>
+				</section>
+
+				<section>
+					<h2>Nolan Davidson</h2>
+					<p>
+						Success Engineer @ Chef Software
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h2>What is Chef?</h2>
+						<ul>
+							<li>An open source community</li>
+							<li>A software company</li>
+							<li>A collection of software targeted at automation</li>
+						</ul>
+					</section>
+					<section>
+						<h2>The software</h2>
+						<ul>
+							<li>Chef client and Chef server (today's topic)</li>
+							<li>Chef Provisioning</li>
+							<li>Chef Delivery</li>
+							<li>Chef Compliance</li>
+							<li>Chef Analytics</li>
+							<li>More to come...</li>
+					</section>
+				</section>
+
+				<section>
+					<h2>Where do I start?</h2>
+					<p>
+						Chef provides ChefDK to setup a workstation for Chef development.
+					</p>
+					<p>
+						<a href="https://downloads.chef.io/chef-dk/">https://downloads.chef.io/chef-dk/</a>
+					</p>
+				</section>
+
+				<section>
+					<h2>What's in the box!?!?</h2>
+					<p>
+						<code>chef</code> - CLI tool to streamline workflow<br>
+						<code>berkshelf</code> - Cookbook dependency manager<br>
+						<code>kitchen</code> - Cookbook integration testing framework<br>
+						<code>chefspec</code> - Unit testing (rspec extensions)<br>
+						<code>foodcritic</code> - Linting tool<br>
+						<code>knife</code> - CLI tool for interacting with Chef Server<br>
+						<code>ohai</code> - System profiling tool<br>
+						<code>chef-client</code> - The thing that does the things!<br>
+					</p>
+				</section>
+
+				<section>
+					<h2>Cookbooks, Recipes, and Resources</h2>
+					<ul>
+						<li>Cookbooks are collections of configuration automation logic and data.</li>
+
+						<li>Recipes are collections of logic and resources.  A cookbook will have one or more recipes.</li>
+
+						<li>Resources are individual configuration items.  A package, service, file, etc.</li>
+					</ul>
+				</section>
+
+				<section>
+					<section>
+						<h2>Chef is declarative</h2>
+						<p>Recipes are not scripts.  They are not a procedural list of commands to run.</p>
+						<p>Chef will manage only the things you tell it to manage.</p>
+					</section>
+					<section>
+						<h2>What's the difference between these?</h2>
+						script.sh
+						<pre><code>
+#!/bin/bash
+sudo yum install httpd
+sudo cp config_files/httpd.conf /etc/httpd/
+sudo service httpd restart
+						</code></pre>
+						recipe.rb
+						<pre><code>
+package 'httpd'
+service 'httpd'
+cookbook_file '/etc/httpd/httpd.conf' do
+  source 'httpd.conf'
+  notifies :restart, 'service[httpd]'
+end
+						</code></pre>
+				</section>
+			</section>
+
+				<section>
+					<h2>Chef is Ruby</h2>
+					<p>The Chef DSL is pure Ruby, so Ruby can be used at will in recipes, resources and libraries.</p>
+				</section>
+
+				<section>
+					<h2>Node attributes</h2>
+					<p>Data about the node that chef is currently running on.</p>
+					<p>Access/set in multiple ways.</p>
+				</section>
+
+				<section>
+					<h2>Resources</h2>
+					<p>Resource are provided as a DSL for describing system state. They should be idempotent whenever possible.</p>
+					<p>Resources provide a layer of abstraction.</p>
+					<pre><code>
+package 'apache2' do
+  action :install
+end
+
+file '/var/www/html/index.html' do
+  content '<h1>Hello world!</h1>'
+  mode '0755'
+  owner 'apache'
+  group 'apache'
+end
+
+service 'apache2' do
+  action [ :enable, :start ]
+end
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Where do resources come from?</h2>
+					<ul>
+						<li>Chef ships with a ton of resources built in</li>
+						<li>Community cookbooks</li>
+						<li>You!</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Resources and Providers</h2>
+					<p>Resources are the representation of the desired state and available properties.</p>
+					<p>Providers are the implementation of how to bring a system into a desired state.</p>
+					<p>Most built in resources have multiple providers for different operating systems.  Chef will load the proper provider for the system based on Ohai's detection of the operating system.  This can be overridden per resource if needed.</p>
+				</section>
+
+				<section>
+					<h2>Separating data from logic</h2>
+					<p>What's wrong with the with recipe we looked at earlier?</p>
+					<ul>
+						<li>It assumes a certain operating system in the use of hard coded package and service names.</li>
+						<li>If we want to change the welcome message, we have to change our recipe code.</li>
+					</ul>
+					<p>Let's make it better!</p>
+				</section>
+
+				<section>
+					<p>attributes.rb</p>
+					<pre><code>
+default[:mycookbook][:apache][:package_name] = 'apache2'
+default[:mycookbook][:apache][:service_name] = 'apache2'
+default[:mycookbook][:web_content] = '<h1>Hello world!</h1>'
+					</code></pre>
+					<p>recipe.rb</p>
+					<pre><code>
+package node[:mycookbook][:apache][:package_name] do
+  action :install
+end
+
+file '/var/www/html/index.html' do
+  content node[:mycookbook][:web_content]
+  mode '0755'
+  owner 'apache'
+  group 'apache'
+end
+
+service node[:mycookbook][:apache][:service_name] do
+  action [ :enable, :start ]
+end
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Chef architecture</h2>
+					<p>chef-client is the where the magic happens.</p>
+					<p>Chef server provides a central management point and information repository.  It is NOT required!</p>
+					<p>Chef Zero is awesome sauce if you do not need/want to manage a Chef server.</p>
+				</section>
+
+				<section>
+					<h2>Two pass model</h2>
+					<p>The chef-client uses a two pass model to configure a system.</p>
+					<ul>
+						<li>Compile time - All recipes and node data are processed to create a list of resources to configure.</li>
+						<li>Converge time - The resource list is processed to bring the system into the desired state.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Testing</h2>
+					<ul>
+						<li>Lint/Style - foodcritic/rubocop</li>
+						<li>Unit - ChefSpec (white box)</li>
+						<li>Integration - Test Kitchen (black box)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Lint/Style</h2>
+					<p>foodcritic is a tool for checking for good Chef style.  Comes with built in rules that can be configured.  Custom rules are also available in the community.</p>
+					<p>rubocop is a general Ruby linting tool.</p>
+				</section>
+
+				<section>
+					<h2>Unit</h2>
+					<p>ChefSpec is an RSpec extension that allows you to test through compile time.  Tests run fast, and are straightforward to write.  Great for catching unintended regressions in logic.</p>
+					<p>Node data may be stubbed manually, or Fauxhai may be used to simulate a particular platform.</p>
+				</section>
+
+				<section>
+					<h2>Integration</h2>
+					<p>Test Kitchen provides a framework for provisioning machines to run your actual code against, and then executing tests against them.</p>
+					<p>The most common testing tools are ServerSpec and InSpec (both RSpec based), but a bash tool (BATS) exists as well.</p>
+				</section>
+
+				<section>
+					<h2>Roles and Environments</h2>
+					<p>Roles provide a way of setting a run_list and some attributes that can be applied to nodes.  These are commonly mapped to node functionality (eg. webserver, appserver, etc)</p>
+					<p>Environments provide a way of setting attributes and pinning cookbook versions for a set of nodes.  Commonly along the lines of (dev, QA, prod, etc)</p>
+				</section>
+
+				<section>
+					<h2>Data Bags</h2>
+					<p>Data bags give you another way to store data.</p>
+					users/user1.json
+					<pre><code>
+{
+  "id": "user1",
+  "username": "user1",
+  "shell": "bash"
+}
+					</code></pre>
+					recipe.rb
+					<pre><code>
+new_user = data_bag_item('users', 'user1')
+user new_user['username'] do
+  shell new_user['shell']
+end
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Managing Secrets</h2>
+					<p>There are a couple of options for managing secrets in Chef natively.</p>
+					<ul>
+						<li>Encrypted Data Bags</li>
+						<li>Chef Vault (Wrapper around encrypted data bags)</li>
+					</ul>
+					<p>Chef can also integrate with external secret management systems such as Hashicorp Vault.</p>
+				</section>
+
+				<section>
+					<h2>Search</h2>
+					<p>One of the most compelling reasons to use a Chef server is the ability to search your infrastructure.  This can be done from the command line or from a recipe.</p>
+					Command line:
+					<pre><code>
+knife search node 'role:webserver AND chef_environment:QA'
+					</code></pre>
+					Recipe:
+					<pre><code>
+search(:node, 'role:webserver AND chef_environment:QA').each do |n|
+  puts n['ipaddress']
+end
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Cookbook Patterns</h2>
+					<ul>
+						<li>Library - Provides resources and libraries to be used as building blocks</li>
+						<li>Application - Install and configure one piece of software (ie. nginx)</li>
+						<li>Wrapper - Very thin wrapper around another cookbook (myorg_apache2 which sets some attributes and then calls the community apache2 cookbook).</li>
+						<li>Base - Specific to your organization.  Usually calls other cookbooks to set some base level system settings.</li>
+						<li>Environment - Cookbook for deploying entire environment.  Multiple recipes (my_cookbook::default, my_cookbook::webserver, my_cookbook::appserver)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Demo time!</h2>
+				</section>
+
+				<section>
+					<h2>More resources</h2>
+					<ul>
+						<li>learn.chef.io</li>
+						<li>chef.io/webinars</li>
+						<li>manage.chef.io (Free hosted Chef for up to 5 nodes)</li>
+						<li>Learning Chef by Seth Vargo and Mischa Taylor</li>
+						<li>Just enough Ruby for Chef (https://docs.chef.io/ruby.html)</li>
+						<li>https://github.com/nsdavidson/kdo-chef-intro (This presentation and demo)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Think of something later?</h2>
+					<ul>
+						<li>nolan.davidson@gmail.com</li>
+						<li>ndavidson on KnoxDevs Slack.  Mostly hanging out in #devops</li>
+					</ul>
+				</section>
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
